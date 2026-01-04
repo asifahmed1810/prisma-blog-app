@@ -3,6 +3,7 @@ import { Post, PostStatus } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import { PostWhereInput } from "../../../generated/prisma/models";
 import { boolean } from "better-auth/*";
+import { SortOrder } from "../../../generated/prisma/internal/prismaNamespace";
 
 const createPost = async (
   data: Omit<Post, "id" | "createdAt" | "updatedAt" | "authorId">,
@@ -17,7 +18,7 @@ const createPost = async (
   return result;
 };
 
-const getAllPost = async (payload: { search: string | undefined  , tags:string[]|[] ,isFeatured:boolean | undefined ,status:PostStatus|undefined , authorId:string|undefined}) => {
+const getAllPost = async (payload: { search: string | undefined  , tags:string[]|[] ,isFeatured:boolean | undefined ,status:PostStatus|undefined , authorId:string|undefined,page:number , limit:number,skip:number,sortBy:string , sortOrder:string}) => {
 
 
 
@@ -71,9 +72,14 @@ const getAllPost = async (payload: { search: string | undefined  , tags:string[]
 
 
   const result = await prisma.post.findMany({
+    take:payload.limit,
+    skip:payload.skip,
     where: {
       AND:andConditions
     },
+    orderBy:{
+      [payload.sortBy]:payload.sortOrder
+    }
   });
   return result;
 };

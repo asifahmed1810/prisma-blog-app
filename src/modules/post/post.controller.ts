@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { postService } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
+import paginationSortingHelper from "../../helpers/paginationSortingHelpers";
 const createPost = async (req: Request, res: Response) => {
     try {
         const user = req.user;
@@ -27,7 +28,12 @@ const getAllPost=async(req:Request, res:Response)=>{
         const isFeatured=req.query.isFeatured? req.query.isFeatured==='true':undefined;
         const status=req.query.status as PostStatus | undefined;
         const authorId=req.query.authorId as string | undefined;
-        const result =await postService.getAllPost({search:searhString , tags,isFeatured ,status,authorId})
+        
+        const {page,limit,skip,sortBy,sortOrder}=paginationSortingHelper(req.query)
+
+
+
+        const result =await postService.getAllPost({search:searhString , tags,isFeatured ,status,authorId,page,limit,skip,sortBy,sortOrder})
          res.status(201).json(result)
         
         

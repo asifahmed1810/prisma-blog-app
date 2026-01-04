@@ -7,4 +7,5 @@ const router = Router();
 
 router.post("/", auth(UserRole.USER), postController.createPost);
 router.get("/",postController.getAllPost)
+router.get("/:id", postController.getSingleId)
 export const postRouter = router;

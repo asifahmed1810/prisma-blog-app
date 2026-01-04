@@ -81,10 +81,52 @@ const getAllPost = async (payload: { search: string | undefined  , tags:string[]
       [payload.sortBy]:payload.sortOrder
     }
   });
-  return result;
+
+  const total=await prisma.post.count({
+    where: {
+      AND:andConditions
+    }
+    
+  })
+
+
+  return {
+    data:result,
+    pagination:{
+      total,
+      page:payload.page,
+      limit:payload.limit,
+      total_page:Math.ceil(total/payload.limit)
+
+    }
+  };
 };
+
+
+const getSingleId=async(id:string)=>{
+ return await prisma.$transaction(async (tx) => {
+        await tx.post.update({
+            where: {
+                id: id
+            },
+            data: {
+                views: {
+                    increment: 1
+                }
+            }
+        })
+        const postData = await tx.post.findUnique({
+            where: {
+                id: id
+            }
+        })
+        return postData
+    })
+}
+
 
 export const postService = {
   createPost,
   getAllPost,
+  getSingleId
 };

@@ -45,7 +45,28 @@ const getAllPost=async(req:Request, res:Response)=>{
     }
 }
 
+
+const getSingleId=async(req:Request , res:Response)=>{
+    try {
+        const {id}=req.params;
+        if(!id){
+            throw new Error("Post id is required")
+        }
+        const result =await postService.getSingleId(id )
+
+        res.status(201).json(result)
+
+        
+    } catch (e) {
+        res.status(400).json({
+            error: "Post creation failed",
+            details: e
+        })
+    }
+}
+
 export const postController={
     createPost,
-    getAllPost
+    getAllPost,
+    getSingleId
 }

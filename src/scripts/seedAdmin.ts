@@ -32,8 +32,28 @@ async function seedAdmin() {
             },
             body:JSON.stringify(adminData)
         })
+
+
+        if(signupAdmin.ok){
+            console.log("-----Admin created----");
+            console.log(signupAdmin);
+            await prisma.user.update({
+                where:{
+                    email:adminData.email
+                },
+                data:{
+                    emailVerified:true
+                }
+            })
+            console.log("----email verified updated-----");
+        }
+
+        console.log("----success-----");
+
         
     } catch (error) {
         console.error(error);
     }
 }
+
+seedAdmin()

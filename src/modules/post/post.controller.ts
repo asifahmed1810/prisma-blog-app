@@ -65,6 +65,7 @@ const getSingleId=async(req:Request , res:Response)=>{
     }
 }
 
+
 export const postController={
     createPost,
     getAllPost,

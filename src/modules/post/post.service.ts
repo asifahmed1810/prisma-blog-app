@@ -1,5 +1,5 @@
 import { title } from "node:process";
-import { Post, PostStatus } from "../../../generated/prisma/client";
+import { CommentStatus, Post, PostStatus } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import { PostWhereInput } from "../../../generated/prisma/models";
 import { boolean } from "better-auth/*";
@@ -79,6 +79,11 @@ const getAllPost = async (payload: { search: string | undefined  , tags:string[]
     },
     orderBy:{
       [payload.sortBy]:payload.sortOrder
+    },
+    include:{
+      _count:{
+        select:{comments:true}
+      }
     }
   });
 
@@ -117,7 +122,29 @@ const getSingleId=async(id:string)=>{
         })
         const postData = await tx.post.findUnique({
             where: {
-                id: id
+                id: id,
+               
+            },
+            include:{
+              comments:{
+                where:{
+                  parentId:null,
+                  status:CommentStatus.APPROVED
+                },
+                orderBy:{
+                  createdAt:"desc"
+                },
+                include:{
+                  replies:{
+                    include:{
+                      replies:true
+                    }
+                  }
+                }
+              },
+              _count:{
+                select:{comments:true}
+              }
             }
         })
         return postData

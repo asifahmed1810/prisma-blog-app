@@ -108,11 +108,11 @@ const getAllPost = async (payload: { search: string | undefined  , tags:string[]
 };
 
 
-const getSingleId=async(id:string)=>{
- return await prisma.$transaction(async (tx) => {
+const getPostById = async (postId: string) => {
+    return await prisma.$transaction(async (tx) => {
         await tx.post.update({
             where: {
-                id: id
+                id: postId
             },
             data: {
                 views: {
@@ -122,29 +122,35 @@ const getSingleId=async(id:string)=>{
         })
         const postData = await tx.post.findUnique({
             where: {
-                id: id,
-               
+                id: postId
             },
-            include:{
-              comments:{
-                where:{
-                  parentId:null,
-                  status:CommentStatus.APPROVED
-                },
-                orderBy:{
-                  createdAt:"desc"
-                },
-                include:{
-                  replies:{
-                    include:{
-                      replies:true
+            include: {
+                comments: {
+                    where: {
+                        parentId: null,
+                        status: CommentStatus.APPROVED
+                    },
+                    orderBy: { createdAt: "desc" },
+                    include: {
+                        replies: {
+                            where: {
+                                status: CommentStatus.APPROVED
+                            },
+                            orderBy: { createdAt: "asc" },
+                            include: {
+                                replies: {
+                                    where: {
+                                        status: CommentStatus.APPROVED
+                                    },
+                                    orderBy: { createdAt: "asc" }
+                                }
+                            }
+                        }
                     }
-                  }
+                },
+                _count: {
+                    select: { comments: true }
                 }
-              },
-              _count:{
-                select:{comments:true}
-              }
             }
         })
         return postData
@@ -152,8 +158,26 @@ const getSingleId=async(id:string)=>{
 }
 
 
+
+const getMyPost=async(authorId:string)=>{
+  const result=await prisma.post.findMany({
+    where:{
+      authorId
+    },
+    orderBy:{
+      createdAt:"desc"
+    }
+  })
+  console.log(result);
+
+  return result
+
+}
+
+
 export const postService = {
   createPost,
   getAllPost,
-  getSingleId
+  getPostById,
+  getMyPost
 };

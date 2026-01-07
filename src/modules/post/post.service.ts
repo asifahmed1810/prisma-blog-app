@@ -189,10 +189,66 @@ const getMyPost=async(authorId:string)=>{
 
 }
 
+const updatePost=async(postId:string , data:Partial<Post> , authorId:string,isAdmin:boolean)=>{
+  const postData=await prisma.post.findUniqueOrThrow({
+    where:{
+      id:postId
+    },
+    select:{
+      id:true,
+      authorId:true
+    }
+  })
+
+  if(!isAdmin && (postData.authorId !== authorId)){
+    throw new Error("You are not author in this post")
+  }
+
+  if(!isAdmin){
+    delete data.isFeatured;
+  }
+
+  const result= await prisma.post.update({
+    where:{
+      id:postData.id
+    },
+    data
+  })
+
+  return result
+
+
+}
+
+const postDelete=async(postId:string , authorId:string ,isAdmin:boolean)=>{
+  const postData=await prisma.post.findUniqueOrThrow({
+    where:{
+      id:postId
+    },
+    select:{
+      id:true,
+      authorId:true
+    }
+  })
+
+  if(!isAdmin && (postData.authorId !==authorId)){
+    throw new Error("You are not author in this post")
+  }
+
+  return await prisma.post.delete({
+    where:{
+      id:postId
+    }
+  })
+
+}
+
 
 export const postService = {
   createPost,
   getAllPost,
   getPostById,
-  getMyPost
+  getMyPost,
+  updatePost,
+  postDelete
 };

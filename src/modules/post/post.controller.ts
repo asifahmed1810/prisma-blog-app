@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { postService } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
 import paginationSortingHelper from "../../helpers/paginationSortingHelpers";
+import { error } from "node:console";
+import { string } from "better-auth/*";
+import { UserRole } from "../../middlewares/auth";
 
 const createPost = async (req: Request, res: Response) => {
   try {
@@ -66,11 +69,11 @@ const getPostById = async (req: Request, res: Response) => {
     const result = await postService.getPostById(postId);
     res.status(200).json(result);
   } catch (e: any) {
-  res.status(404).json({
-    error: "Post fetch failed",
-    message: e.message
-  });
-}
+    res.status(404).json({
+      error: "Post fetch failed",
+      message: e.message,
+    });
+  }
 };
 
 const getMyPost = async (req: Request, res: Response) => {
@@ -84,16 +87,59 @@ const getMyPost = async (req: Request, res: Response) => {
 
     res.status(201).json(result);
   } catch (e: any) {
-  res.status(404).json({
-    error: "Post fetch failed",
-    message: e.message
-  });
-}
+    res.status(404).json({
+      error: "Post fetch failed",
+      message: e.message,
+    });
+  }
 };
+
+const updatePost=async(req:Request ,res:Response)=>{
+  try {
+    const user=req.user;
+    if(!user){
+      throw new Error("You are Unauthorized")
+    }
+    const {postId}=req.params;
+    const isAdmin= user.role===UserRole.ADMIN;
+    const result=await postService.updatePost(postId as string ,req.body , user.id , isAdmin)
+    res.status(201).json(result);
+  } catch (e:any) {
+    res.status(404).json({
+      error:"Post update failed",
+      message:e.message
+    })
+  }
+}
+
+const postDelete=async(req:Request ,res:Response)=>{
+  try {
+    const user=req.user;
+    if(!user){
+       throw new Error("You are Unauthorized")
+    }
+    const {postId}=req.params;
+    const isAdmin=user.role===UserRole.ADMIN;
+    const result=await postService.postDelete(postId as string , user.id , isAdmin)
+
+    res.status(201).json(result)
+    
+  } catch (e:any) {
+    res.status(404).json({
+      error:"Post delete failed",
+      message:e.message
+    })
+  }
+}
+
+
 
 export const postController = {
   createPost,
   getAllPost,
   getPostById,
   getMyPost,
+  updatePost,
+  postDelete
+  
 };

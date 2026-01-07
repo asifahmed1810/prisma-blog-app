@@ -166,11 +166,26 @@ const getMyPost=async(authorId:string)=>{
     },
     orderBy:{
       createdAt:"desc"
+    },
+    include:{
+       _count:{
+        select:{
+          comments:true
+        }
+       }
     }
   })
-  console.log(result);
+  
+  const total=await prisma.post.count({
+    where:{
+      authorId
+    }
+  })
 
-  return result
+  return {
+    data:result,
+    total
+  }
 
 }
 

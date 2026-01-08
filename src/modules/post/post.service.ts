@@ -2,7 +2,7 @@ import { title } from "node:process";
 import { CommentStatus, Post, PostStatus } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import { PostWhereInput } from "../../../generated/prisma/models";
-import { boolean } from "better-auth/*";
+import { boolean, promise } from "better-auth/*";
 import { SortOrder } from "../../../generated/prisma/internal/prismaNamespace";
 
 const createPost = async (
@@ -244,11 +244,46 @@ const postDelete=async(postId:string , authorId:string ,isAdmin:boolean)=>{
 }
 
 
+const getStats=async()=>{
+  return await prisma.$transaction(async(tx)=>{
+     const [totalPosts, publishedPosts, draftPosts, archivedPosts, totalComments, approvedComment, totalUsers, adminCount, userCount, totalViews] =
+            await Promise.all([
+                await tx.post.count(),
+                await tx.post.count({ where: { status: PostStatus.PUBLISHED } }),
+                await tx.post.count({ where: { status: PostStatus.DRAFT } }),
+                await tx.post.count({ where: { status: PostStatus.ARCHIVED } }),
+                await tx.comment.count(),
+                await tx.comment.count({ where: { status: CommentStatus.APPROVED } }),
+                await tx.user.count(),
+                await tx.user.count({ where: { role: "ADMIN" } }),
+                await tx.user.count({ where: { role: "USER" } }),
+                await tx.post.aggregate({
+                    _sum: { views: true }
+                })
+            ])
+
+        return {
+            totalPosts,
+            publishedPosts,
+            draftPosts,
+            archivedPosts,
+            totalComments,
+            approvedComment,
+            totalUsers,
+            adminCount,
+            userCount,
+            totalViews: totalViews._sum.views
+        }
+    })
+}
+
+
 export const postService = {
   createPost,
   getAllPost,
   getPostById,
   getMyPost,
   updatePost,
-  postDelete
+  postDelete,
+  getStats
 };

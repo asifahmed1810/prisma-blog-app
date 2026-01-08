@@ -7,6 +7,11 @@ const router = Router();
 
 router.post("/", auth(UserRole.USER ,UserRole.ADMIN), postController.createPost);
 router.get("/",postController.getAllPost)
+router.get(
+    "/stats",
+    auth(UserRole.ADMIN),
+    postController.getStats)
+
 router.get("/get-mypost", auth(UserRole.USER , UserRole.ADMIN),postController.getMyPost)
 router.get("/:postId", postController.getPostById)
 router.patch("/:postId",auth(UserRole.USER,UserRole.ADMIN), postController.updatePost)

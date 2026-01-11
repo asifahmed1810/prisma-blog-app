@@ -98,7 +98,7 @@ const updateComment=async(commentId:string, data:{content ?:string, status?:Comm
             id:commentId,
             authorId
         },
-        data
+        data,
     })
 }
 
